@@ -10,6 +10,12 @@ public class Restaurante : AbstractValidator<Restaurante>
 {
     #region Constructor
 
+    public Restaurante(string nome, ECozinha cozinha)
+    {
+        Nome = nome;
+        Cozinha = cozinha;
+    }
+    
     public Restaurante(string id, string nome, ECozinha cozinha)
     {
         Id = id;
