@@ -145,4 +145,12 @@ public class RestauranteRepository
         
         return retorno;
     }
+
+    public (long, long) Remover(string restauranteId)
+    {
+        var resultadoAvaliacoes = _avaliacoes.DeleteMany(x => x.RestauranteId == restauranteId);
+        var resultadoRestaurante = _restaurantes.DeleteOne(x => x.Id == restauranteId);
+
+        return (resultadoRestaurante.DeletedCount, resultadoAvaliacoes.DeletedCount);
+    }
 }

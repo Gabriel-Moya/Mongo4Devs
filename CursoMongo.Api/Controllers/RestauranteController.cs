@@ -184,4 +184,20 @@ public class RestauranteController : ControllerBase
 
         return Ok(new { data = listagem });
     }
+
+    [HttpDelete("restaurante/{id}")]
+    public ActionResult Remover(string id)
+    {
+        var restaurante = _restauranteRepository.ObterPorId(id);
+
+        if (restaurante is null)
+            return NotFound();
+
+        (var totalRestauranteRemovido, var totalAvaliacoesRemovidas) = _restauranteRepository.Remover(id);
+
+        return Ok(new
+        {
+            data = $"Total de exclusões: {totalRestauranteRemovido} restaurante com {totalAvaliacoesRemovidas} avaliações"
+        });
+    }
 }
