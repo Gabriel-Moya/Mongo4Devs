@@ -165,4 +165,35 @@ public class RestauranteRepository
 
         return restaurantes;
     }
+
+    public async Task<Dictionary<Restaurante, double>> ObterTop3_ComLookup()
+    {
+        var retorno = new Dictionary<Restaurante, double>();
+
+        var top3 = _avaliacoes.Aggregate()
+            .Group(x => x.RestauranteId, g => new { RestauranteId = g.Key, MediaEstrelas = g.Average(a => a.Estrelas) })
+            .SortByDescending(x => x.MediaEstrelas)
+            .Limit(3)
+            .Lookup<RestauranteSchema, RestauranteAvaliacaoSchema>("restaurante", "RestauranteId", "Id", "Restaurante")
+            .Lookup<AvaliacaoSchema, RestauranteAvaliacaoSchema>("avaliacoes", "Id", "RestauranteId", "Avaliacoes");
+
+        await top3.ForEachAsync(x =>
+        {
+            var restaurante = new Restaurante(x.Id, x.Restaurante[0].Nome, x.Restaurante[0].Cozinha);
+            var endereco = new Endereco(
+                x.Restaurante[0].Endereco.Logradouro,
+                x.Restaurante[0].Endereco.Numero,
+                x.Restaurante[0].Endereco.Cidade,
+                x.Restaurante[0].Endereco.UF,
+                x.Restaurante[0].Endereco.Cep);
+
+            restaurante.AtribuirEndereco(endereco);
+            
+            x.Avaliacoes.ForEach(a => restaurante.InserirAvaliacao(a.ConverterParaDomain()));
+            
+            retorno.Add(restaurante, x.MediaEstrelas);
+        });
+
+        return retorno;
+    }
 }

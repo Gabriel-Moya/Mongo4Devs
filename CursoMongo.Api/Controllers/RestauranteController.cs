@@ -184,6 +184,23 @@ public class RestauranteController : ControllerBase
 
         return Ok(new { data = listagem });
     }
+    
+    [HttpGet("restaurante/top3-lookup")]
+    public async Task<ActionResult> ObterTop3RestaurantesComLookup()
+    {
+        var top3 = await _restauranteRepository.ObterTop3_ComLookup();
+
+        var listagem = top3.Select(x => new RestauranteTop3
+        {
+            Id = x.Key.Id,
+            Nome = x.Key.Nome,
+            Cozinha = (int)x.Key.Cozinha,
+            Cidade = x.Key.Endereco.Cidade,
+            Estrelas = x.Value
+        });
+
+        return Ok(new { data = listagem });
+    }
 
     [HttpDelete("restaurante/{id}")]
     public ActionResult Remover(string id)
