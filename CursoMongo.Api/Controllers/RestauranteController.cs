@@ -85,4 +85,52 @@ public class RestauranteController : ControllerBase
 
         return Ok(new { data = exibicao });
     }
+
+    [HttpPut("restaurante")]
+    public ActionResult AlterarRestaurante([FromBody] RestauranteAlteracaoCompleta restauranteAlteracaoCompleta)
+    {
+        var restaurante = _restauranteRepository.ObterPorId(restauranteAlteracaoCompleta.Id);
+
+        if (restaurante is null)
+            return NotFound();
+
+        var cozinha = ECozinhaHelper.ConverterDeInteiro(restauranteAlteracaoCompleta.Cozinha);
+        restaurante = new Restaurante(restauranteAlteracaoCompleta.Id, restauranteAlteracaoCompleta.Nome, cozinha);
+        var endereco = new Endereco(
+            restauranteAlteracaoCompleta.Logradouro,
+            restauranteAlteracaoCompleta.Numero,
+            restauranteAlteracaoCompleta.Cidade,
+            restauranteAlteracaoCompleta.UF,
+            restauranteAlteracaoCompleta.Cep);
+        
+        restaurante.AtribuirEndereco(endereco);
+
+        if (!restaurante.Validar())
+        {
+            return BadRequest(new { errors = restaurante.ValidationResult.Errors.Select(x => x.ErrorMessage) });
+        }
+
+        if (!_restauranteRepository.AlterarCompleto(restaurante))
+        {
+            return BadRequest(new { errors = "Nenhum documento foi alterado." });
+        }
+
+        return Ok(new { data = "Restaurante alterado com sucesso." });
+    }
+
+    [HttpPatch("restaurante/{id}")]
+    public ActionResult AlterarCozinha(string id, [FromBody] RestauranteAlteracaoParcial restauranteAlteracaoParcial)
+    {
+        var restaurante = _restauranteRepository.ObterPorId(id);
+
+        if (restaurante is null)
+            return NotFound();
+
+        var cozinha = ECozinhaHelper.ConverterDeInteiro(restauranteAlteracaoParcial.Cozinha);
+
+        if (!_restauranteRepository.AlterarCozinha(id, cozinha))
+            return BadRequest(new { errors = "Nenhum documento foi alterado." });
+
+        return Ok(new { data = "Restaurante alterado com sucesso." });
+    }
 }
