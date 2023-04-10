@@ -48,4 +48,14 @@ public class RestauranteRepository
 
         return restaurantes;
     }
+
+    public Restaurante ObterPorId(string id)
+    {
+        var document = _restaurantes.AsQueryable().FirstOrDefault(x => x.Id == id);
+
+        if (document is null)
+            return null;
+
+        return document.ConverterParaDomain();
+    }
 }
