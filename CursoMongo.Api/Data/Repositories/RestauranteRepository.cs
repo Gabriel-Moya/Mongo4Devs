@@ -117,4 +117,32 @@ public class RestauranteRepository
 
         _avaliacoes.InsertOne(document);
     }
+
+    public async Task<Dictionary<Restaurante, double>> ObterTop3()
+    {
+        var retorno = new Dictionary<Restaurante, double>();
+
+        var top3 = _avaliacoes.Aggregate()
+            .Group(x => x.RestauranteId, 
+                g => new
+                {
+                    RestauranteId = g.Key, MediaEstrelas = g.Average(a => a.Estrelas)
+                })
+            .SortByDescending(x => x.MediaEstrelas)
+            .Limit(3);
+
+        await top3.ForEachAsync(x =>
+        {
+            var restaurante = ObterPorId(x.RestauranteId);
+
+            _avaliacoes.AsQueryable()
+                .Where(a => a.RestauranteId == x.RestauranteId)
+                .ToList()
+                .ForEach(a => restaurante.InserirAvaliacao(a.ConverterParaDomain()));
+            
+            retorno.Add(restaurante, x.MediaEstrelas);
+        });
+        
+        return retorno;
+    }
 }

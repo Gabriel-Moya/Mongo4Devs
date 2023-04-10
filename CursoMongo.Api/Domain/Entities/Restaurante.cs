@@ -21,6 +21,7 @@ public class Restaurante : AbstractValidator<Restaurante>
         Id = id;
         Nome = nome;
         Cozinha = cozinha;
+        Avaliacoes = new List<Avaliacao>();
     }
 
     #endregion
@@ -31,6 +32,7 @@ public class Restaurante : AbstractValidator<Restaurante>
     public string Nome { get; private set; }
     public ECozinha Cozinha { get; private set; }
     public Endereco Endereco { get; private set; }
+    public List<Avaliacao> Avaliacoes { get; set; }
     
     public ValidationResult ValidationResult { get; set; }
 
@@ -41,6 +43,11 @@ public class Restaurante : AbstractValidator<Restaurante>
     public void AtribuirEndereco(Endereco endereco)
     {
         Endereco = endereco;
+    }
+
+    public void InserirAvaliacao(Avaliacao avaliacao)
+    {
+        Avaliacoes.Add(avaliacao);
     }
 
     #endregion
