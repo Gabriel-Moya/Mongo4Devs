@@ -3,6 +3,7 @@ using CursoMongo.Api.Domain.Entities;
 using CursoMongo.Api.Domain.Enums;
 using CursoMongo.Api.Domain.ValueObjects;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace CursoMongo.Api.Data.Repositories;
@@ -89,5 +90,17 @@ public class RestauranteRepository
         var resultado = _restaurantes.UpdateOne(x => x.Id == id, atualizacao);
 
         return resultado.ModifiedCount > 0;
+    }
+
+    public IEnumerable<Restaurante> ObterPorNome(string nome)
+    {
+        var restaurantes = new List<Restaurante>();
+        
+        _restaurantes.AsQueryable()
+            .Where(x => x.Nome.ToLower().Contains(nome.ToLower()))
+            .ToList()
+            .ForEach(x => restaurantes.Add(x.ConverterParaDomain()));
+
+        return restaurantes;
     }
 }

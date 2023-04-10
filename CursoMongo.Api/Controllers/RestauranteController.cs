@@ -133,4 +133,20 @@ public class RestauranteController : ControllerBase
 
         return Ok(new { data = "Restaurante alterado com sucesso." });
     }
+
+    [HttpGet("restaurante")]
+    public ActionResult ObterRestaurantePorNome([FromQuery] string nome)
+    {
+        var restaurantes = _restauranteRepository.ObterPorNome(nome);
+
+        var listagem = restaurantes.Select(x => new RestauranteListagem
+        {
+            Id =  x.Id,
+            Nome = x.Nome,
+            Cozinha = (int)x.Cozinha,
+            Cidade = x.Endereco.Cidade
+        });
+
+        return Ok(new { data = listagem });
+    }
 }
