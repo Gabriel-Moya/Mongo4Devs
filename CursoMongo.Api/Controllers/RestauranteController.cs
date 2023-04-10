@@ -200,4 +200,20 @@ public class RestauranteController : ControllerBase
             data = $"Total de exclusões: {totalRestauranteRemovido} restaurante com {totalAvaliacoesRemovidas} avaliações"
         });
     }
+
+    [HttpGet("restaurante/textual")]
+    public async Task<ActionResult> ObterRestaurantePorBuscaTextual([FromQuery] string texto)
+    {
+        var restaurantes = await _restauranteRepository.ObterPorBuscaTextual(texto);
+
+        var listagem = restaurantes.ToList().Select(x => new RestauranteListagem
+        {
+            Id = x.Id,
+            Nome = x.Nome,
+            Cozinha = (int)x.Cozinha,
+            Cidade = x.Endereco.Cidade
+        });
+
+        return Ok(new { data = listagem });
+    }
 }

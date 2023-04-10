@@ -5,6 +5,7 @@ using CursoMongo.Api.Domain.ValueObjects;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace CursoMongo.Api.Data.Repositories;
 
@@ -98,8 +99,7 @@ public class RestauranteRepository
     {
         var restaurantes = new List<Restaurante>();
         
-        _restaurantes.AsQueryable()
-            .Where(x => x.Nome.ToLower().Contains(nome.ToLower()))
+        Queryable.Where(_restaurantes.AsQueryable(), x => x.Nome.ToLower().Contains(nome.ToLower()))
             .ToList()
             .ForEach(x => restaurantes.Add(x.ConverterParaDomain()));
 
@@ -135,8 +135,7 @@ public class RestauranteRepository
         {
             var restaurante = ObterPorId(x.RestauranteId);
 
-            _avaliacoes.AsQueryable()
-                .Where(a => a.RestauranteId == x.RestauranteId)
+            Queryable.Where(_avaliacoes.AsQueryable(), a => a.RestauranteId == x.RestauranteId)
                 .ToList()
                 .ForEach(a => restaurante.InserirAvaliacao(a.ConverterParaDomain()));
             
@@ -152,5 +151,18 @@ public class RestauranteRepository
         var resultadoRestaurante = _restaurantes.DeleteOne(x => x.Id == restauranteId);
 
         return (resultadoRestaurante.DeletedCount, resultadoAvaliacoes.DeletedCount);
+    }
+
+    public async Task<IEnumerable<Restaurante>> ObterPorBuscaTextual(string texto)
+    {
+        var restaurantes = new List<Restaurante>();
+
+        var filter = Builders<RestauranteSchema>.Filter.Text(texto);
+
+        await _restaurantes.AsQueryable()
+            .Where(x => filter.Inject())
+            .ForEachAsync(d => restaurantes.Add(d.ConverterParaDomain()));
+
+        return restaurantes;
     }
 }
