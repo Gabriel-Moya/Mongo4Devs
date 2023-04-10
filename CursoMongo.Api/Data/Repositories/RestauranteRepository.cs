@@ -11,10 +11,12 @@ namespace CursoMongo.Api.Data.Repositories;
 public class RestauranteRepository
 {
     private readonly IMongoCollection<RestauranteSchema> _restaurantes;
+    private readonly IMongoCollection<AvaliacaoSchema> _avaliacoes;
 
     public RestauranteRepository(MongoDB mongoDB)
     {
         _restaurantes = mongoDB.DB.GetCollection<RestauranteSchema>("restaurante");
+        _avaliacoes = mongoDB.DB.GetCollection<AvaliacaoSchema>("avaliacoes");
     }
 
     public void Inserir(Restaurante restaurante)
@@ -102,5 +104,17 @@ public class RestauranteRepository
             .ForEach(x => restaurantes.Add(x.ConverterParaDomain()));
 
         return restaurantes;
+    }
+
+    public void Avaliar(string restauranteId, Avaliacao avaliacao)
+    {
+        var document = new AvaliacaoSchema
+        {
+            RestauranteId = restauranteId,
+            Estrelas = avaliacao.Estrelas,
+            Comentario = avaliacao.Comentario
+        };
+
+        _avaliacoes.InsertOne(document);
     }
 }

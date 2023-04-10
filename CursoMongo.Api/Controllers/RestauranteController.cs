@@ -149,4 +149,22 @@ public class RestauranteController : ControllerBase
 
         return Ok(new { data = listagem });
     }
+
+    [HttpPatch("restaurante/{id}/avaliar")]
+    public ActionResult AvaliarRestaurante(string id, [FromBody] AvaliacaoInclusao avaliacaoInclusao)
+    {
+        var restaurante = _restauranteRepository.ObterPorId(id);
+
+        if (restaurante is null)
+            return NotFound();
+
+        var avaliacao = new Avaliacao(avaliacaoInclusao.Estrelas, avaliacaoInclusao.Comentario);
+
+        if (!avaliacao.Validar())
+            return BadRequest(new { errors = avaliacao.ValidationResult.Errors.Select(x => x.ErrorMessage) });
+        
+        _restauranteRepository.Avaliar(id, avaliacao);
+
+        return Ok(new { data = "Restaurante avaliado com sucesso." });
+    }
 }
